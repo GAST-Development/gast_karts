@@ -26,6 +26,20 @@ function Notify(msg, type)
 end
 
 Citizen.CreateThread(function()
+    if Config.EnableBlip then
+        local blip = AddBlipForCoord(Config.NPC.position.x, Config.NPC.position.y, Config.NPC.position.z)
+        SetBlipSprite(blip, Config.Blip.sprite)
+        SetBlipDisplay(blip, 4)
+        SetBlipScale(blip, Config.Blip.scale)
+        SetBlipColour(blip, Config.Blip.color)
+        SetBlipAsShortRange(blip, true)
+        BeginTextCommandSetBlipName("STRING")
+        AddTextComponentString(Config.Blip.label)
+        EndTextCommandSetBlipName(blip)
+    end
+end) 	
+
+Citizen.CreateThread(function()
     local model = GetHashKey(Config.NPC.model)
     RequestModel(model)
     while not HasModelLoaded(model) do Wait(1) end
