@@ -15,6 +15,12 @@ Features
 
 ✅ Society Integration: Earnings from vehicle rentals can be directed to society accounts for both ESX and QBCore.
 
+Spawn:
+https://drive.google.com/file/d/1YNqT1mig5DX-Q1ZryMulczjZfsDijYgU/view?usp=sharing
+
+Go-Kart remove:
+https://drive.google.com/file/d/1tCUsUAFgp6izlk6HnDdcg4yz6Qs4krPb/view?usp=sharing
+
 Requirements
 
 ESX Legacy or QBCore Framework
