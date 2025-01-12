@@ -67,7 +67,7 @@ function SetFullFuel(vehicle)
     if Config.UseFuelSystem and GetResourceState('LegacyFuel') == 'started' then
         exports['LegacyFuel']:SetFuel(vehicle, 100.0)
     elseif Config.UseFuelSystem and GetResourceState('ox_fuel') == 'started' then
-        exports['ox_fuel']:SetFuel(vehicle, 100.0)
+        Entity(vehicle).state.fuel = Config.MaxFuel
     else
         print("^2[INFO]: No fuel system detected. Skipping fuel adjustment.")
     end

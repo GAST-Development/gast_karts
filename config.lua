@@ -4,6 +4,7 @@ Config.Framework = "esx" -- "esx", "qbcore"
 Config.Language = "cs" -- "cs", "en"
 
 Config.UseFuelSystem = true
+Config.MaxFuel = 100
 
 Config.NPC = {
     model = "s_m_m_highsec_01",
