@@ -3,6 +3,8 @@ Config = {}
 Config.Framework = "esx" -- "esx", "qbcore"
 Config.Language = "cs" -- "cs", "en"
 
+Config.UseFuelSystem = true
+
 Config.NPC = {
     model = "s_m_m_highsec_01",
     position = vector3(-153.3912, -2151.4944, 15.7050),
@@ -38,8 +40,8 @@ Config.SocietyAccount = "society_government"
 
 Config.EnableBlip = true
 Config.Blip = {
-    sprite = 225, 
-    color = 3,  
+    sprite = 735, 
+    color = 1,  
     scale = 0.8, 
     label = "Požičovňa motokár" 
 }
@@ -49,7 +51,7 @@ if Config.Language == "cs" then
         ['npc_prompt'] = "Stisknete ~INPUT_CONTEXT~ pro pujceni motokary.",
         ['target'] = "Půjčovňa motokár.",
         ['vehicle_rented'] = "Půjčil jste si motokáru na %s minut.",
-        ['vehicle_returned'] = "Motokára byla vrácena. Byli jste pokutováni %s$ za opuštění oblasti.",
+        ['vehicle_returned'] = "Byl jste pokutováni %s$ za opuštění oblasti.",
         ['vehicle_despawned'] = "Motokára byla vrácena. Děkujeme za návštěvu.",
         ['not_enough_money'] = "Nemáte dostatek peněz.",
         ['menu_choose_vehicle'] = "Vyberte si motokaru",
@@ -57,19 +59,21 @@ if Config.Language == "cs" then
         ['menu_rent_button'] = "Půjčit",
         ['menu_cancel_button'] = "Zrušit",
         ['menu_title'] = "Půjčovna motokár",
+        ['minutes'] = " minút",
     }
 elseif Config.Language == "en" then
     Lang = {
         ['npc_prompt'] = "Press ~INPUT_CONTEXT~ to rent a Go kart.",
         ['target'] = "Rent a Go kart.",
         ['vehicle_rented'] = "You rented a Go kart for %s minutes.",
-        ['vehicle_returned'] = "Go kart returned. You have been fined $%s for leaving the area.",
+        ['vehicle_returned'] = "You have been fined $%s for leaving the area.",
         ['not_enough_money'] = "You don't have enough money.",
         ['menu_choose_vehicle'] = "Choose your Go Kart",
         ['menu_choose_time'] = "Choose rental duration",
         ['menu_rent_button'] = "Rent",
         ['menu_cancel_button'] = "Cancel",
         ['menu_title'] = "Go Kart Rental",
+        ['minutes'] = " minutes"
     }
 else
     print("^1[ERROR]: Invalid language configured in Config.lua")

@@ -117,7 +117,7 @@ function SelectRentalTime(vehicle)
     for _, rentalTime in ipairs(Config.RentalTimes) do
         local rentalPrice = rentalTime.price
         table.insert(elements, {
-            label = rentalTime.time .. " minutes",
+            label = rentalTime.time .. Lang['minutes'],
             value = {model = vehicle.model, time = rentalTime.time, price = rentalPrice}
         })
     end
@@ -127,7 +127,7 @@ function SelectRentalTime(vehicle)
         for _, rentalTime in ipairs(Config.RentalTimes) do
             local rentalPrice = rentalTime.price
             table.insert(options, {
-                title = rentalTime.time .. " minutes",
+                title = rentalTime.time .. Lang['minutes'],
                 event = "gast_karts:confirmRental",
                 args = {model = vehicle.model, time = rentalTime.time, price = rentalPrice}
             })
@@ -143,7 +143,7 @@ function SelectRentalTime(vehicle)
         for _, rentalTime in ipairs(Config.RentalTimes) do
             local rentalPrice = rentalTime.price
             table.insert(menuItems, {
-                header = rentalTime.time .. " minutes",
+                header = rentalTime.time .. Lang['minutes'],
                 params = {
                     event = "gast_karts:confirmRental",
                     args = {model = vehicle.model, time = rentalTime.time, price = rentalPrice}
@@ -177,6 +177,7 @@ function SpawnVehicle(model, rentalTime)
         ESX.Game.SpawnVehicle(model, Config.VehicleSpawn.position, Config.VehicleSpawn.heading, function(vehicle)
             TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, -1)
             rentedVehicle = vehicle
+            SetFullFuel(vehicle)
             StartRentalTimer(rentalTime, vehicle)
             Notify(Lang['vehicle_rented']:format(rentalTime), "success")
         end)
@@ -186,6 +187,7 @@ function SpawnVehicle(model, rentalTime)
             SetEntityHeading(vehicle, Config.VehicleSpawn.heading)
             TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, -1)
             rentedVehicle = vehicle
+            SetFullFuel(vehicle)
             StartRentalTimer(rentalTime, vehicle)
             Notify(Lang['vehicle_rented']:format(rentalTime), "success")
         end, Config.VehicleSpawn.position, true)
@@ -207,14 +209,21 @@ function StartRentalTimer(minutes, vehicle)
             end
 
             if IsPlayerOutsideRadius(vehicle) then
-                if Config.Framework == "esx" then
-                    ESX.Game.DeleteVehicle(vehicle)
-                elseif Config.Framework == "qbcore" then
-                    QBCore.Functions.DeleteVehicle(vehicle)
+                local playerInVehicle = IsPedInVehicle(PlayerPedId(), vehicle, false)
+                if playerInVehicle then
+                    if Config.Framework == "esx" then
+                        ESX.Game.DeleteVehicle(vehicle)
+                        TriggerServerEvent('gast_karts:applyFine', Config.FineAmount)
+                    elseif Config.Framework == "qbcore" then
+                        QBCore.Functions.DeleteVehicle(vehicle)
+                        TriggerServerEvent('gast_karts:applyFine', Config.FineAmount)
+                    end
+                    Notify(Lang['vehicle_returned']:format(Config.FineAmount), "error")
+                    HideTimeText()
+                    break
+                else
+
                 end
-                Notify(Lang['vehicle_returned']:format(Config.FineAmount), "error")
-                HideTimeText()
-                break
             end
         end
 
@@ -241,6 +250,9 @@ function IsPlayerOutsideRadius(vehicle)
 
     if distance > Config.MaxRadius then
         displayTextActive = false 
+
+        timeRemaining = 0
+        HideTimeText()
         return true
     else
         displayTextActive = true 
