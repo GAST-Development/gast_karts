@@ -6,7 +6,7 @@ author 'G.A.S.T. Development'
 
 lua54 'yes'
 
-description 'NPC vehicle rental system for ESX and QB-Core frameworks'
+description 'NPC Go-Karts rental system for ESX and QB-Core frameworks'
 
 version '1.1.1'
 
