@@ -46,11 +46,22 @@ function SetupNPCInteraction()
                 local playerCoords = GetEntityCoords(PlayerPedId())
                 if #(playerCoords - Config.TargetPosition) < 2.0 then
                     sleep = 0
-                    if Config.NotificationType == "ox_lib" then
-                        lib.showTextUI(Lang['npc_prompt'])
-                    else
-                        ESX.ShowHelpNotification(Lang['npc_prompt'])
+                    ESX.ShowHelpNotification(Lang['npc_prompt'])
+                    if IsControlJustReleased(0, 38) then
+                        TriggerEvent("gast_karts:openMenu")
                     end
+                end
+                Wait(sleep)
+            end
+        end)
+    elseif Config.InteractionType == "ox_lib" then
+        Citizen.CreateThread(function()
+            while true do
+                local sleep = 1000
+                local playerCoords = GetEntityCoords(PlayerPedId())
+                if #(playerCoords - Config.TargetPosition) < 2.0 then
+                    sleep = 0
+                    lib.showTextUI(Lang['npc_prompt_lib'])
                     if IsControlJustReleased(0, 38) then
                         TriggerEvent("gast_karts:openMenu")
                     end
@@ -60,7 +71,41 @@ function SetupNPCInteraction()
                 Wait(sleep)
             end
         end)
-    end
+    elseif Config.InteractionType == "ps-ui" then
+        Citizen.CreateThread(function()
+            while true do
+                local sleep = 1000
+                local playerCoords = GetEntityCoords(PlayerPedId())
+                if #(playerCoords - Config.TargetPosition) < 2.0 then
+                    sleep = 0
+                    exports['ps-ui']:DisplayText(Lang['npc_prompt_lib'], "primary")
+                    if IsControlJustReleased(0, 38) then
+                        TriggerEvent("gast_karts:openMenu")
+                    end
+                else
+                    exports['ps-ui']:HideText()
+                end
+                Wait(sleep)
+            end
+        end)
+    elseif Config.InteractionType == "gast_lib" then
+        Citizen.CreateThread(function()
+            while true do
+                local sleep = 1000
+                local playerCoords = GetEntityCoords(PlayerPedId())
+                if #(playerCoords - Config.TargetPosition) < 2.0 then
+                    sleep = 0
+                    exports['gast_lib']:DisplayText(Lang['npc_prompt_lib'], "primary")
+                    if IsControlJustReleased(0, 38) then
+                        TriggerEvent("gast_karts:openMenu")
+                    end
+                else
+                    exports['gast_lib']:HideText()
+                end
+                Wait(sleep)
+            end
+        end)
+    end   
 end
 
 function SetFullFuel(vehicle)
@@ -68,7 +113,33 @@ function SetFullFuel(vehicle)
         exports['LegacyFuel']:SetFuel(vehicle, 100.0)
     elseif Config.UseFuelSystem and GetResourceState('ox_fuel') == 'started' then
         Entity(vehicle).state.fuel = Config.MaxFuel
+    elseif Config.UseFuelSystem and GetResourceState('gast_fuel') == 'started' then
+
     else
         print("^2[INFO]: No fuel system detected. Skipping fuel adjustment.")
+    end
+end
+
+function Notify(msg, type)
+    if Config.NotificationType == "ox_lib" then
+        lib.notify({title = msg, type = type})
+    elseif Config.NotificationType == "qb" and Config.Framework == "qbcore" then
+        QBCore.Functions.Notify(msg, type)
+    elseif Config.NotificationType == "esx" and Config.Framework == "esx" then
+        ESX.ShowNotification(msg)
+    elseif Config.Notifications == "ps-ui" then
+        exports['ps-ui']:Notify({
+            title = "Go-Karts",
+            description = msg,
+            type = type
+        })
+    elseif Config.Notifications == "gast_lib" then
+        exports['gast_lib']:Notify({
+            title = Lang['title_lib'],
+            description = msg,
+            type = type
+        })
+    else
+        print("^1[ERROR]: Invalid notification type set in Config.lua!")
     end
 end

@@ -1,7 +1,11 @@
-if Config.Framework == "esx" then
+if GetResourceState('es_extended') == 'started' then
     ESX = exports['es_extended']:getSharedObject()
-elseif Config.Framework == "qbcore" then
+    Config.Framework = "esx"
+elseif GetResourceState('qb-core') == 'started' then
     QBCore = exports['qb-core']:GetCoreObject()
+    Config.Framework = "qbcore"
+else
+    print("^1ERROR: Neither ESX nor QBCore detected!^0")
 end
 
 require('Client/editable')
@@ -12,18 +16,6 @@ local rentalTimer = nil
 local timeRemaining = 0
 local displayTextActive = false
 local currentDisplayText = ""
-
-function Notify(msg, type)
-    if Config.NotificationType == "ox_lib" then
-        lib.notify({title = msg, type = type})
-    elseif Config.NotificationType == "qb" and Config.Framework == "qbcore" then
-        QBCore.Functions.Notify(msg, type)
-    elseif Config.NotificationType == "esx" and Config.Framework == "esx" then
-        ESX.ShowNotification(msg)
-    else
-        print("^1[ERROR]: Invalid notification type set in Config.lua!")
-    end
-end
 
 Citizen.CreateThread(function()
     if Config.EnableBlip then
@@ -91,7 +83,7 @@ AddEventHandler('gast_karts:openMenu', function()
             })
         end
         exports['qb-menu']:openMenu(menuItems)
-    elseif Config.MenuType == "esx" then
+    elseif Config.MenuType == "esx" and Config.Framework == "esx" then
         ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'gast_karts_vehicle_menu',
             {title = Lang['menu_choose_vehicle'], elements = elements},
             function(data, menu)
@@ -102,6 +94,63 @@ AddEventHandler('gast_karts:openMenu', function()
                 menu.close()
             end
         )
+    elseif Config.MenuType == "context" and Config.Framework == "esx" then
+        local formMenu = {}
+
+        for _, vehicle in ipairs(Config.RentalVehicles) do
+            table.insert(formMenu, {
+                name = vehicle.model,
+                title = vehicle.displayName,
+                input = false
+            })
+        end
+
+        table.insert(formMenu, {
+            name = 'cancel',
+            title = Lang['menu_cancel_button'],
+            unselectable = true
+        })
+
+        ESX.OpenContext('right', formMenu, function(menu, element)
+            if element.name ~= 'cancel' then
+                TriggerEvent("gast_karts:selectVehicle", element.name)
+            end
+            ESX.CloseContext()
+        end, function()
+            print('Context closed')
+        end)
+    elseif Config.MenuType == "ps-ui" then
+        local menuItems = {}
+        for _, vehicle in ipairs(Config.RentalVehicles) do
+            table.insert(menuItems, {
+                id = vehicle.model,
+                header = vehicle.displayName,
+                text = Lang['title_lib'],
+                icon = "fa-car",
+                color = "primary",
+                event = "gast_karts:selectVehicle",
+                args = vehicle
+            })
+        end
+    
+        exports['ps-ui']:CreateMenu(menuItems)
+        exports['ps-ui']:DisplayMenu("gast_karts_vehicle_menu")
+    elseif Config.MenuType == "gast_lib" then
+        local menuItems = {}
+        for _, vehicle in ipairs(Config.RentalVehicles) do
+            table.insert(menuItems, {
+                id = vehicle.model,
+                header = vehicle.displayName,
+                text = Lang['title_lib'],
+                icon = "fa-car",
+                color = "primary",
+                event = "gast_karts:selectVehicle",
+                args = vehicle
+            })
+        end
+    
+        exports['gast_lib']:CreateMenu(menuItems)
+        exports['gast_lib']:DisplayMenu("gast_karts_vehicle_menu")
     else
         print("^1[ERROR]: Invalid menu type set in Config.lua!")
     end
@@ -144,14 +193,118 @@ function SelectRentalTime(vehicle)
             local rentalPrice = rentalTime.price
             table.insert(menuItems, {
                 header = rentalTime.time .. Lang['minutes'],
+                txt = "Price: " .. rentalPrice .. "$",
                 params = {
                     event = "gast_karts:confirmRental",
                     args = {model = vehicle.model, time = rentalTime.time, price = rentalPrice}
                 }
             })
         end
+        table.insert(menuItems, {
+            header = Lang['menu_cancel_button'],
+            txt = "",
+            params = {
+                event = "",
+            }
+        })
         exports['qb-menu']:openMenu(menuItems)
-    else
+    elseif Config.MenuType == "context" and Config.Framework == "esx" then
+        local formMenu = {}
+
+        for _, rentalTime in ipairs(Config.RentalTimes) do
+            table.insert(formMenu, {
+                name = tostring(rentalTime.time),
+                title = rentalTime.time .. Lang['minutes'],
+                description = "Cena: " .. tostring(rentalTime.price) .. "$",
+                input = false
+            })
+        end
+
+        table.insert(formMenu, {
+            name = 'cancel',
+            title = Lang['menu_cancel_button'],
+            unselectable = true
+        })
+
+        ESX.OpenContext('right', formMenu, function(menu, element)
+            if element.name ~= 'cancel' then
+                local selectedTime = tonumber(element.name)
+                local selectedRental = nil
+
+                for _, rentalTime in ipairs(Config.RentalTimes) do
+                    if rentalTime.time == selectedTime then
+                        selectedRental = rentalTime
+                        break
+                    end
+                end
+
+                if selectedRental then
+                    TriggerEvent("gast_karts:confirmRental", {
+                        model = vehicle.model,
+                        time = selectedRental.time,
+                        price = selectedRental.price
+                    })
+                end
+            end
+            ESX.CloseContext()
+        end, function()
+            print('Context closed')
+        end)
+    elseif Config.MenuType == "ps-ui" then
+        local menuItems = {}
+        for _, rentalTime in ipairs(Config.RentalTimes) do
+            local rentalPrice = rentalTime.price
+            table.insert(menuItems, {
+                id = tostring(rentalTime.time),
+                header = rentalTime.time .. Lang['minutes'],
+                text = "Price: " .. rentalPrice .. "$",
+                icon = "fa-clock",
+                color = "primary",
+                event = "gast_karts:confirmRental",
+                args = {model = vehicle.model, time = rentalTime.time, price = rentalPrice}
+            })
+        end
+    
+        table.insert(menuItems, {
+            id = "cancel",
+            header = Lang['menu_cancel_button'],
+            text = "Cancel the selection",
+            icon = "fa-times",
+            color = "danger",
+            event = "",
+            args = {}
+        })
+    
+        exports['ps-ui']:CreateMenu(menuItems)
+        exports['ps-ui']:DisplayMenu("gast_karts_time_menu")    
+    elseif Config.MenuType == "gast_lib" then
+        local menuItems = {}
+        for _, rentalTime in ipairs(Config.RentalTimes) do
+            local rentalPrice = rentalTime.price
+            table.insert(menuItems, {
+                id = tostring(rentalTime.time),
+                header = rentalTime.time .. Lang['minutes'],
+                text = "Price: " .. rentalPrice .. "$",
+                icon = "fa-clock",
+                color = "primary",
+                event = "gast_karts:confirmRental",
+                args = {model = vehicle.model, time = rentalTime.time, price = rentalPrice}
+            })
+        end
+    
+        table.insert(menuItems, {
+            id = "cancel",
+            header = Lang['menu_cancel_button'],
+            text = "Cancel the selection",
+            icon = "fa-times",
+            color = "danger",
+            event = "",
+            args = {}
+        })
+    
+        exports['gast_lib']:CreateMenu(menuItems)
+        exports['gast_lib']:DisplayMenu("gast_karts_time_menu")   
+    elseif Config.MenuType == "esx" and Config.Framework == "esx" then
         ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'gast_karts_time_menu',
             {title = Lang['menu_choose_time'], elements = elements},
             function(data, menu)
@@ -162,6 +315,8 @@ function SelectRentalTime(vehicle)
                 menu.close()
             end
         )
+    else
+        print("^1[ERROR]: Invalid menu type set in Config.lua!")
     end
 end
 

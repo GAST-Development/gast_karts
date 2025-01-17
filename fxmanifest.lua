@@ -8,7 +8,7 @@ lua54 'yes'
 
 description 'NPC vehicle rental system for ESX and QB-Core frameworks'
 
-version '1.0.1'
+version '1.1.1'
 
 shared_script {
     '@es_extended/imports.lua', 

@@ -1,7 +1,11 @@
-if Config.Framework == "esx" then
+if GetResourceState('es_extended') == 'started' then
     ESX = exports['es_extended']:getSharedObject()
-elseif Config.Framework == "qbcore" then
+    Config.Framework = "esx"
+elseif GetResourceState('qb-core') == 'started' then
     QBCore = exports['qb-core']:GetCoreObject()
+    Config.Framework = "qbcore"
+else
+    print("^1ERROR: Neither ESX nor QBCore detected!^0")
 end
 
 function SendNotification(src, message, type)
@@ -11,6 +15,12 @@ function SendNotification(src, message, type)
         TriggerClientEvent('esx:showNotification', src, message)
     elseif Config.NotificationType == "qbcore" then
         TriggerClientEvent('QBCore:Notify', src, message, type or 'primary')
+    elseif Config.Notifications == "ps-ui" then
+        TriggerClientEvent('ps-ui:Notify', src, {
+            title = "Go-Karts",
+            description = message,
+            type = type
+        })
     else
         print("^1[ERROR]: Invalid notification type set in Config.lua!")
     end

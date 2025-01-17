@@ -1,6 +1,7 @@
 Config = {}
 
-Config.Framework = "esx" -- "esx", "qbcore"
+Config.VersionCheck = true
+
 Config.Language = "cs" -- "cs", "en"
 
 Config.UseFuelSystem = true
@@ -14,9 +15,9 @@ Config.NPC = {
 
 Config.TargetPosition = vector3(-153.3912, -2151.4944, 16.7050)
 
-Config.InteractionType = "ox_target" -- "ox_target", "textui", "qb-target"
-Config.MenuType = "ox_lib" -- "esx", "ox_lib", "qb"
-Config.NotificationType = "ox_lib" -- "esx", "ox_lib", "qb"
+Config.InteractionType = "ox_target" -- "ox_target", "textui", "qb-target", "ox_lib", "gast_lib", "ps-ui
+Config.MenuType = "ox_lib" -- "esx", "ox_lib", "qb", "ps-ui", "context", "gast_lib"
+Config.NotificationType = "ox_lib" -- "esx", "ox_lib", "qb", "ps-ui", "gast_lib"
 
 Config.RentalVehicles = {
     {model = "veto", displayName = "Veto"},
@@ -50,6 +51,7 @@ Config.Blip = {
 if Config.Language == "cs" then
     Lang = {
         ['npc_prompt'] = "Stisknete ~INPUT_CONTEXT~ pro pujceni motokary.",
+        ['npc_prompt_lib'] = "Stisknete [E] pro pujceni motokary.",
         ['target'] = "Půjčovňa motokár.",
         ['vehicle_rented'] = "Půjčil jste si motokáru na %s minut.",
         ['vehicle_returned'] = "Byl jste pokutováni %s$ za opuštění oblasti.",
@@ -60,11 +62,13 @@ if Config.Language == "cs" then
         ['menu_rent_button'] = "Půjčit",
         ['menu_cancel_button'] = "Zrušit",
         ['menu_title'] = "Půjčovna motokár",
+        ['title_lib'] = "Motokáry",
         ['minutes'] = " minút",
     }
 elseif Config.Language == "en" then
     Lang = {
         ['npc_prompt'] = "Press ~INPUT_CONTEXT~ to rent a Go kart.",
+        ['npc_prompt_LIB'] = "Press [E] to rent a Go kart.",
         ['target'] = "Rent a Go kart.",
         ['vehicle_rented'] = "You rented a Go kart for %s minutes.",
         ['vehicle_returned'] = "You have been fined $%s for leaving the area.",
@@ -74,7 +78,8 @@ elseif Config.Language == "en" then
         ['menu_rent_button'] = "Rent",
         ['menu_cancel_button'] = "Cancel",
         ['menu_title'] = "Go Kart Rental",
-        ['minutes'] = " minutes"
+        ['minutes'] = " minutes",
+        ['title_lib'] = "Go-Karts",
     }
 else
     print("^1[ERROR]: Invalid language configured in Config.lua")
